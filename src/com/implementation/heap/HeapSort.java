@@ -1,6 +1,6 @@
 package com.implementation.heap;
 
-public class Heapsort {
+public class HeapSort {
 	
 	private int heapSize;
 	
