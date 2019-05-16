@@ -1,38 +1,64 @@
 package com.implementation.heap;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
 
 public class MinHeap {
 
-	private int capacity;
-	private int[] heap;
-	private int heapSize;
+	int[] heap;
+	int heapSize;
 	
-	public MinHeap(int capacity) {
-		this.capacity = capacity;
-		this.heap = new int[capacity];
-		this.heapSize = 0;
+	public void buildMinHeap(int[] heap) {
+		this.heap = heap;
+		this.heapSize = heap.length;
+		for(int i = heapSize / 2 - 1; i >= 0; i--) {
+			minHeapify(i);
+		}
 	}
 	
-	public void add(int data) {
-		if(heapSize == capacity) {
-			throw new IllegalStateException("");
+	private void minHeapify(int index) {
+		int minIndex = index;
+		int left = index * 2 + 1;
+		if(left < heapSize && heap[left] < heap[minIndex]) {
+			minIndex = left;
 		}
-		heap[heapSize++] = data;
-		heapifyUp();
+		int right = index * 2 + 2;
+		if(right < heapSize && heap[right] < heap[minIndex]) {
+			minIndex = right;
+		}
+		if(minIndex != index) {
+			swap(index, minIndex);
+			minHeapify(minIndex);
+		}
 	}
 	
-	private void heapifyUp() {
-		int index = heapSize - 1;
-		while(index > 0) {
-			if(heap[getParentIndex(index)] < heap[index]) {
-				break;
-			}
-			int parent = getParentIndex(index);
-			swap(index, parent);
-			index = parent;
+	private void swap(int index1, int index2) {
+		int temp = heap[index1];
+		heap[index1] = heap[index2];
+		heap[index2] = temp;
+	}
+	
+	public void insertKey(int key) {
+		ensureExtraCapacity();
+		heap[heapSize] = Integer.MIN_VALUE;
+		increaseKey(heapSize, key);
+		heapSize++;
+	}
+
+	private void ensureExtraCapacity() {
+		if(heapSize == heap.length) {
+			heap = Arrays.copyOf(heap, heapSize * 2);
 		}
+	}
+
+	public int extractMin() {
+		if(heapSize == 0) {
+			throw new IllegalStateException();
+		}
+		int min = heap[0];
+		heap[0] = heap[heapSize - 1];
+		heapSize--;
+		minHeapify(0);
+		return min;
 	}
 	
 	public int peek() {
@@ -42,103 +68,27 @@ public class MinHeap {
 		return heap[0];
 	}
 	
-	public int extractMin() {
-		if(heapSize == 0) {
-			throw new IllegalStateException("");
+	public void increaseKey(int index, int key) {
+		if(index >= heapSize || key < heap[index]) {
+			throw new IllegalStateException();
 		}
-		int minValue = heap[0];
-		heap[0] = heap[heapSize - 1];
-		heapSize--;
-		heapifyDown();
-		return minValue;
+		heap[index] = key;
+		minHeapify(index);
 	}
 	
-	public boolean isEmpty() {
-		return heapSize == 0;
-	}
-	
-	public void delete(int key) {
-		decreaseKey(key, Integer.MIN_VALUE);
-		extractMin();
-	}
-	
-	public void decreaseKey(int key, int value) {
-		if(key >= heapSize) {
-			return;
+	public void decreaseKey(int index, int key) {
+		if(index >= heapSize || key < heap[index]) {
+			throw new IllegalStateException();
 		}
-		heap[key] = value;
-		heapifyUp();
-	}
-
-	private void heapifyDown() {
-		int index = 0;
-		while(index < heapSize) {
-			int left, right, minIndex = index;
-			if(hasLeftChild(index)) {
-				left = getLeftIndex(index);
-				minIndex = findMinIndex(minIndex, left);
-			}
-			if(hasRightChild(index)) {
-				right = getRightIndex(index);
-				minIndex = findMinIndex(minIndex, right);
-			}
-			if(minIndex == index) {
+		heap[index] = key;
+		while(index > 0) {
+			int parent = (index - 1) / 2;
+			if(heap[parent] <= heap[index]) {
 				break;
 			}
-			swap(index, minIndex);
-			index = minIndex;
+			swap(index, parent);
+			index = parent;
 		}
-	}
-	
-	private void swap(int index1, int index2) {
-		int temp = heap[index1];
-		heap[index1] = heap[index2];
-		heap[index2] = temp;
-	}
-
-	private int findMinIndex(int index1, int index2) {
-		return heap[index1] < heap[index2] ? index1  : index2;
-	}
-
-	private boolean hasLeftChild(int index) {
-		return index * 2 + 1 < heapSize;
-	}
-	
-	private boolean hasRightChild(int index) {
-		return index * 2 + 2 < heapSize;
-	}
-
-	private int getParentIndex(int index) {
-		return (index - 1) / 2;
-	}
-
-	private int getLeftIndex(int index) {
-		return index * 2 + 2;
-	}
-
-	private int getRightIndex(int index) {
-		return index * 2 + 1;
-	}
-
-	public void printHeap() {
-		System.out.println("Heap size = " + heapSize);
-		Queue<Integer> q = new LinkedList<>();
-		int index = 0;
-		q.add(heap[index++]);
-		int power = 0;
-		int count = (int)Math.pow(2, power++);
-		while(!q.isEmpty()) {
-			System.out.print(q.remove() + " ");
-			count--;
-			if(count == 0) {
-				count = (int)Math.pow(2, power++);
-				System.out.println();
-			}
-			if(index < heapSize) {
-				q.add(heap[index++]);
-			}
-		}
-		System.out.println();
 	}
 
 }
